@@ -30,6 +30,7 @@
 {0} scan [-c COMMENT] [-f FILE] [-n NAME] [-e VER] [-s SCANNERS] [-r] (PATH)
 {0} scanproject [--project-file] (PROJECT-FILE)
 {0} scanners [-f FILE]
+{0} packagerelate [--parent] (PARENT-FILE) [--child] (CHILD-FILE)
 {0} (--help | --version)
 
 Commands:
@@ -46,6 +47,7 @@ Commands:
   print         Render and print a document to standard output
   scan          Scan an archive file or directory
   scanners      List available scanners
+  packagerelate Relates packages between a parent and child
 
 Options:
   -C, --doc-comment=COMMENT   Comment for new document (otherwise use empty
@@ -179,6 +181,10 @@ def do_configtest(engine, config):
         conn.execute('select 1;')
     print('ok.')
 
+
+def do_packagerelate(parent, child):
+    print(parent)
+    print(child)
 
 def main(sysargv=None):
     argv = docopt.docopt(
@@ -349,7 +355,15 @@ def main(sysargv=None):
             sys.stderr.write(fmt.format(package_path, doc_id))
         with engine.begin() as conn:
             print(render.render_document(conn, doc_id, template_file))
-    
+    elif argv["packagerelate"]:
+        parent_package = argv['PARENT-FILE']
+        child_package = argv['CHILD-FILE']
+        kwargs = {
+            'parent': parent_package,
+            'child': child_package
+        }
+        do_packagerelate(**kwargs)
+
     return 0
 
 
