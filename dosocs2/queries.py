@@ -495,3 +495,13 @@ def auto_described_by(docid):
         )
     .where(v.c.document_id == docid)
     )
+
+
+def find_identifier_by_package_id(package_id):
+    
+    identifiers = db.identifiers.alias()
+    return (select([
+        identifiers.c.identifier_id
+        ])
+    .select_from(identifiers)
+    .where(package_id == package_id))

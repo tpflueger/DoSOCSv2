@@ -207,6 +207,15 @@ def autocreate_relationships(conn, docid):
         bulk_insert(conn, db.relationships, row_params)
 
 
+def create_relationship_prerequisite(conn, parent_identifier, child_identifier):
+    new_relationship = {
+        'left_identifier_id': parent_identifier,
+        'relationship_type_id': 29,
+        'right_identifier_id': child_identifier,
+        'relationship_comment': ''
+    }
+    insert(conn, db.relationships, new_relationship)
+
 def create_document(conn, prefix, package, name=None, comment=None):
     data_license_query = (
         select([db.licenses.c.license_id])
@@ -246,6 +255,18 @@ def create_document(conn, prefix, package, name=None, comment=None):
     # TODO: create known relationships
     autocreate_relationships(conn, new_document_id)
     return new_document
+
+
+def register_relationship(conn, parent_package, child_package):
+    parent_sha1 = util.sha1(parent_package)
+    child_sha1 = util.sha1(child_package)
+    parent_package = lookup_by_sha1(conn, db.packages, parent_sha1)
+    child_package = lookup_by_sha1(conn, db.packages, child_sha1)
+
+    [parent_identifier] = conn.execute(queries.find_identifier_by_package_id(parent_package['package_id'])).fetchone()
+    [child_identifier] = conn.execute(queries.find_identifier_by_package_id(child_package['package_id'])).fetchone()
+
+    create_relationship_prerequisite(conn, parent_identifier, child_identifier)
 
 
 def fetch(conn, table, pkey):

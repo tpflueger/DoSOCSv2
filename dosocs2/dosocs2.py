@@ -182,9 +182,11 @@ def do_configtest(engine, config):
     print('ok.')
 
 
-def do_packagerelate(parent, child):
-    print(parent)
-    print(child)
+def do_packagerelate(engine, parent, child):
+    with engine.begin() as conn:
+        relationship = spdxdb.register_relationship(conn, parent, child)
+
+    return relationship
 
 def main(sysargv=None):
     argv = docopt.docopt(
@@ -356,11 +358,10 @@ def main(sysargv=None):
         with engine.begin() as conn:
             print(render.render_document(conn, doc_id, template_file))
     elif argv["packagerelate"]:
-        parent_package = argv['PARENT-FILE']
-        child_package = argv['CHILD-FILE']
         kwargs = {
-            'parent': parent_package,
-            'child': child_package
+            'engine': engine,
+            'parent': argv['PARENT-FILE'],
+            'child': argv['CHILD-FILE']
         }
         do_packagerelate(**kwargs)
 
