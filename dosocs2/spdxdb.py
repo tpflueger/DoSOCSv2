@@ -214,7 +214,10 @@ def create_relationship_prerequisite(conn, parent_identifier, child_identifier):
         'right_identifier_id': child_identifier,
         'relationship_comment': ''
     }
-    insert(conn, db.relationships, new_relationship)
+    if(conn.execute(queries.check_for_relationship(parent_identifier, child_identifier)).fetchone() == None):
+        insert(conn, db.relationships, new_relationship)
+    else:
+        print("Relationship for parent identifier " + str(parent_identifier) + " and child identifier " + str(child_identifier) + " already exists.")
 
 def create_document(conn, prefix, package, name=None, comment=None):
     data_license_query = (
@@ -266,7 +269,10 @@ def register_relationship(conn, parent_package, child_package):
     [parent_identifier] = conn.execute(queries.find_identifier_by_package_id(parent_package['package_id'])).fetchone()
     [child_identifier] = conn.execute(queries.find_identifier_by_package_id(child_package['package_id'])).fetchone()
 
-    create_relationship_prerequisite(conn, parent_identifier, child_identifier)
+    if parent_identifier != None and child_identifier != None:
+        create_relationship_prerequisite(conn, parent_identifier, child_identifier)
+    else:
+        print("Packages have not been created");
 
 
 def fetch(conn, table, pkey):

@@ -505,3 +505,12 @@ def find_identifier_by_package_id(package_id):
         ])
     .select_from(identifiers)
     .where(identifiers.c.package_id == package_id))
+
+def check_for_relationship(parent_package_id, child_package_id):
+
+    relationships = db.relationships.alias()
+    return (select([
+        relationships.c.relationship_id
+    ])
+    .select_from(relationships)
+    .where(relationships.c.left_identifier_id == parent_package_id and relationships.c.right_identifier_id == child_package_id))
