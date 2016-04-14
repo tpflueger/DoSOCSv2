@@ -31,6 +31,7 @@
 {0} scanproject [--project-file] (PROJECT-FILE)
 {0} scanners [-f FILE]
 {0} packagerelate [--parent] (PARENT-FILE) [--child] (CHILD-FILE)
+{0} dependencies [--package] (PACKAGE_FILE)
 {0} (--help | --version)
 
 Commands:
@@ -48,6 +49,7 @@ Commands:
   scan          Scan an archive file or directory
   scanners      List available scanners
   packagerelate Relates packages between a parent and child
+  dependencies  Grabs dependencies from given package and returns as tgf format
 
 Options:
   -C, --doc-comment=COMMENT   Comment for new document (otherwise use empty
@@ -187,6 +189,12 @@ def do_packagerelate(engine, parent, child):
         relationship = spdxdb.register_relationship(conn, parent, child)
 
     return relationship
+
+def get_dependencies(engine, package):
+    with enginge.begin() as conn:
+        dependencies = spdxdb.get_dependencies(conn, package)
+
+    return dependencies
 
 def main(sysargv=None):
     argv = docopt.docopt(
@@ -364,7 +372,12 @@ def main(sysargv=None):
             'child': argv['CHILD-FILE']
         }
         do_packagerelate(**kwargs)
-
+    elif argv["dependencies"]:
+        kwargs = {
+            'engine': engine,
+            'package': argv['PACKAGE_FILE']
+        }
+        get_dependencies(**kwargs)
     return 0
 
 

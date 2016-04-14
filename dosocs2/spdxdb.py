@@ -272,8 +272,28 @@ def register_relationship(conn, parent_package, child_package):
     if parent_identifier != None and child_identifier != None:
         create_relationship_prerequisite(conn, parent_identifier, child_identifier)
     else:
-        print("Packages have not been created");
+        print("Packages have not been created")
 
+def get_dependencies(conn, package):
+    package_sha1 = util.sha1(package)
+    package = lookup_by_sha1(package_sha1)
+    [package_identifier] = conn.execute(queries.find_identifier_by_package_id(parent_package['package_id'])).fetchone()
+
+    if package_identifier != None:
+        ```
+        psql to grab all dependencies of passed parent..current sql would grab all parents/children of passed pacakge
+        WITH RECURSIVE nodes(left_identifier_id, right_identifier_id, relationship_type_id) AS
+        (
+        SELECT s1.left_identifier_id, s1.right_identifier_id, s1.relationship_type_id from relationships s1
+        where left_identifier_id = 600
+        UNION
+        SELECT s2.left_identifier_id, s2.right_identifier_id, s2.relationship_type_id from relationships s2,
+        nodes s1
+        WHERE s2.right_identifier_id = s1.left_identifier_id or s2.left_identifier_id = s1.right_identifier_id) SELECT * FROM nodes where relationship_type_id = 29;
+        ```
+    else:
+        print("Package given does not exist")
+        return None
 
 def fetch(conn, table, pkey):
     [c] = list(table.primary_key)
