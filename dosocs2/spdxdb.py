@@ -20,7 +20,7 @@
 import os
 
 from sqlalchemy.sql import select, and_
-
+from sqlalchemy.orm import sessionmaker
 from . import queries
 from . import schema as db
 from . import util
@@ -276,21 +276,39 @@ def register_relationship(conn, parent_package, child_package):
 
 def get_dependencies(conn, package):
     package_sha1 = util.sha1(package)
-    package = lookup_by_sha1(package_sha1)
-    [package_identifier] = conn.execute(queries.find_identifier_by_package_id(parent_package['package_id'])).fetchone()
+    package = lookup_by_sha1(conn, db.packages, package_sha1)
+    [package_identifier] = conn.execute(queries.find_identifier_by_package_id(package['package_id'])).fetchone()
 
     if package_identifier != None:
-        ```
-        psql to grab all dependencies of passed parent..current sql would grab all parents/children of passed pacakge
-        WITH RECURSIVE nodes(left_identifier_id, right_identifier_id, relationship_type_id) AS
-        (
-        SELECT s1.left_identifier_id, s1.right_identifier_id, s1.relationship_type_id from relationships s1
-        where left_identifier_id = 600
-        UNION
-        SELECT s2.left_identifier_id, s2.right_identifier_id, s2.relationship_type_id from relationships s2,
-        nodes s1
-        WHERE s2.right_identifier_id = s1.left_identifier_id or s2.left_identifier_id = s1.right_identifier_id) SELECT * FROM nodes where relationship_type_id = 29;
-        ```
+        rel = db.relationships.alias()
+        rel2 = db.relationships.alias()
+
+        Session = sessionmaker(bind=conn)
+        session = Session()
+        nodes = session.query(
+            rel.c.left_identifier_id,
+            rel.c.right_identifier_id,
+            rel.c.relationship_type_id
+        ).filter(rel.c.left_identifier_id == package_identifier).cte(name="nodes", recursive =True)
+
+        nodes = nodes.union_all(
+            session.query(
+                rel2.c.left_identifier_id,
+                rel2.c.right_identifier_id,
+                rel2.c.relationship_type_id
+            ).filter(rel2.c.right_identifier_id == rel.c.left_identifier_id and rel2.c.left_identifier_id == rel.c.right_identifier_id)
+        )
+
+        result = session.query(
+            nodes.c.left_identifier_id,
+            nodes.c.right_identifier_id,
+            nodes.c.relationship_type_id
+        ).filter(nodes.c.relationship_type_id == 29).distinct().all()
+
+        for item in result:
+            print item
+
+        return None
     else:
         print("Package given does not exist")
         return None
