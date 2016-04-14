@@ -303,10 +303,26 @@ def get_dependencies(conn, package):
             nodes.c.left_identifier_id,
             nodes.c.right_identifier_id,
             nodes.c.relationship_type_id
-        ).filter(nodes.c.relationship_type_id == 29).distinct().all()
+        ).filter(nodes.c.relationship_type_id == 29 and nodes.c.right_identifier_id != package_identifier).distinct().all()
 
-        for item in result:
-            print item
+        # Really hacky, still not able to get the database to only return children of current package_id
+        firstValues = [item for item in result if item[0] == package_identifier]
+        relationshipHash = {}
+        for item in firstValues:
+            relationshipHash[item[0]] = ""
+            relationshipHash[item[1]] = ""
+
+            print relationshipHash
+        count = 0
+        while(count < 1):
+            for item in result:
+                if item[0] in relationshipHash.keys() and item[1] not in relationshipHash.keys():
+                    count = count - 1
+                    relationshipHash[item[1]] = ""
+            count = count + 1
+
+        for item in relationshipHash:
+            print(item)
 
         return None
     else:
