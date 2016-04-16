@@ -307,6 +307,9 @@ def get_dependencies(conn, package):
 
         # Really hacky, still not able to get the database to only return children of current package_id
         firstValues = [item for item in result if item[0] == package_identifier]
+        if not firstValues:
+            return [(), ()]
+
         relationshipHash = {}
         for item in firstValues:
             relationshipHash[item[0]] = ""
