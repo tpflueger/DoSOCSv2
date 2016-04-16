@@ -99,6 +99,7 @@ from . import util
 
 format_map = {
     'tag': pkg_resources.resource_filename('dosocs2', 'templates/2.0.tag'),
+    'relationships': pkg_resources.resource_filename('dosocs2', 'templates/relationships.tag')
 }
 
 
@@ -209,6 +210,7 @@ def main(sysargv=None):
     new_doc_comment = argv['--doc-comment'] or ''
     new_doc_name = argv['--doc-name'] or argv['--package-name']
     template_file = argv['--template-file'] or format_map['tag']
+    template_relationship_file = format_map['relationships']
     project_file = argv['PROJECT-FILE'] or ''
 
     # Configuration and scanner discovery
@@ -377,8 +379,9 @@ def main(sysargv=None):
             'engine': engine,
             'package': argv['PACKAGE-FILE']
         }
-        print(kwargs['package'])
-        get_dependencies(**kwargs)
+        dependencies = get_dependencies(**kwargs)
+        print(render.render_relationships(template_relationship_file, dependencies))
+
     return 0
 
 

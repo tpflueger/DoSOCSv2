@@ -312,7 +312,6 @@ def get_dependencies(conn, package):
             relationshipHash[item[0]] = ""
             relationshipHash[item[1]] = ""
 
-            print relationshipHash
         count = 0
         while(count < 1):
             for item in result:
@@ -321,10 +320,25 @@ def get_dependencies(conn, package):
                     relationshipHash[item[1]] = ""
             count = count + 1
 
-        for item in relationshipHash:
-            print(item)
+        relationships = []
+        for item in result:
+            if item[0] in relationshipHash.keys() and item[1] in relationshipHash.keys():
+                relationships.append(item)
 
-        return None
+        package_dependencies = conn.execute(queries.get_package_names(relationshipHash.keys())).fetchall()
+
+        package_dependencies = map(lambda deps:(deps[0], deps[1].encode("ascii")), package_dependencies)
+
+        # get root package and place in front
+        for index, val in enumerate(package_dependencies):
+            if(val[0] == package_identifier):
+                package_dependencies.insert(0, package_dependencies.pop(index))
+
+        for index, val in enumerate(relationships):
+            if(val[0] == package_identifier):
+                relationships.insert(0, relationships.pop(index))
+
+        return [package_dependencies, relationships]
     else:
         print("Package given does not exist")
         return None

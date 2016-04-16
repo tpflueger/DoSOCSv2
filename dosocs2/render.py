@@ -91,3 +91,10 @@ def render_document(conn, docid, template_file):
         'licenses': licenses
         }
     return render_template(template_file, context)
+
+def render_relationships(template_file, dependencies):
+    context = {
+        'identifiers': dependencies[0],
+        'edges': dependencies[1]
+    }
+    return render_template(template_file, context)

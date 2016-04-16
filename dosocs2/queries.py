@@ -514,3 +514,16 @@ def check_for_relationship(parent_package_id, child_package_id):
     ])
     .select_from(relationships)
     .where(relationships.c.left_identifier_id == parent_package_id and relationships.c.right_identifier_id == child_package_id))
+
+def get_package_names(identifier_ids):
+    packages = db.packages.alias()
+    identifiers = db.identifiers.alias()
+
+    return (select([
+        identifiers.c.identifier_id,
+        packages.c.name
+    ]).distinct()
+    .select_from(
+        packages.join(identifiers, identifiers.c.package_id == packages.c.package_id)
+    ).where(identifiers.c.identifier_id.in_(identifier_ids))
+    )
