@@ -510,10 +510,18 @@ def check_for_relationship(parent_package_id, child_package_id):
 
     relationships = db.relationships.alias()
     return (select([
-        relationships.c.relationship_id
+        relationships.c.relationship_id,
+        relationships.c.relationship_type_id
     ])
     .select_from(relationships)
-    .where(relationships.c.left_identifier_id == parent_package_id and relationships.c.right_identifier_id == child_package_id))
+    .where(
+        and_(
+            relationships.c.left_identifier_id == parent_package_id,
+            relationships.c.right_identifier_id == child_package_id,
+            relationships.c.relationship_type_id == 29
+            )
+        )
+    )
 
 def get_package_names(identifier_ids):
     packages = db.packages.alias()
